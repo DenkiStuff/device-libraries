@@ -1,0 +1,9 @@
+
+D13		(PA5)	-	SCK
+D12		(PA6)	-	MISO
+D11		(PA7)	-	MOSI
+D10		(PB6)	-	TFT_CS
+D9		(PC7)	-	TFT_Data/Command
+D8		(PA9)	-	RT_CS
+D4		(PB5)	-	CARD_CS
+
