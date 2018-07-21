@@ -93,19 +93,20 @@ class ili9341 : public gfx {
 	public:
 		ili9341();
 
-		// Required Non-Transaction
+		void init();
+		void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 		void drawPixel(int16_t x, int16_t y, uint16_t color);
-
-
-		// Transaction API
+		void writePixel(int16_t x, int16_t y, uint16_t color);
+		void writePixel(uint16_t color);
+		void writeCommand(uint8_t cmd);
 		void startWrite(void);
 		void endWrite(void);
-		void writeCommand(uint8_t cmd);
 		void spiWrite(uint8_t b);
+		void spiWrite16(uint16_t b);
+		void spiWrite32(uint32_t b);
+		void setCommandMode(void);
+		void setDataMode(void);
 
-		// Transaction API not used by GFX
-		void writePixel(uint16_t color);
-		void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 };
 
 #endif //__ili9341_h__

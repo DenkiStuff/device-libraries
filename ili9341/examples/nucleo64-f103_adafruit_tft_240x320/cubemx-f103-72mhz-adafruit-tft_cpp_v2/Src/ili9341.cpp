@@ -6,43 +6,17 @@ ili9341::ili9341() : gfx(ILI9341_WIDTH, ILI9341_HEIGHT) {;}
 
 
 
-void ili9341::init(uint32_t freq)
+void ili9341::init()
 {
-    if(!freq){
-        freq = SPI_DEFAULT_FREQ;
-    }
-    _freq = freq;
 
-    // Control Pins
-    pinMode(_dc, OUTPUT);
-    digitalWrite(_dc, LOW);
-    pinMode(_cs, OUTPUT);
-    digitalWrite(_cs, HIGH);
+	// Control Pins
+	// pinMode(_dc, OUTPUT);
+	// digitalWrite(_dc, LOW);
+	setCommandMode();
 
-    // Software SPI
-    if(_sclk >= 0){
-        pinMode(_mosi, OUTPUT);
-        digitalWrite(_mosi, LOW);
-        pinMode(_sclk, OUTPUT);
-        digitalWrite(_sclk, HIGH);
-        if(_miso >= 0){
-            pinMode(_miso, INPUT);
-        }
-    }
-
-	// Hardware SPI
-	SPI_BEGIN();
-
-	// toggle RST low to reset
-	if (_rst >= 0) {
-	    pinMode(_rst, OUTPUT);
-	    digitalWrite(_rst, HIGH);
-	    delay(100);
-	    digitalWrite(_rst, LOW);
-	    delay(100);
-	    digitalWrite(_rst, HIGH);
-	    delay(200);
-	}
+	// pinMode(_cs, OUTPUT);
+	// digitalWrite(_cs, HIGH);
+	endWrite();
 
 	startWrite();
 
@@ -98,7 +72,7 @@ void ili9341::init(uint32_t freq)
 	spiWrite(0x48);
 
 	writeCommand(ILI9341_VSCRSADD); // Vertical scroll
-	SPI_WRITE16(0);                 // Zero
+	spiWrite16(0);                 // Zero
 
 	writeCommand(ILI9341_PIXFMT);
 	spiWrite(0x55);
@@ -153,16 +127,14 @@ void ili9341::init(uint32_t freq)
 	spiWrite(0x0F);
 
 	writeCommand(ILI9341_SLPOUT);    //Exit Sleep
-	delay(120);
+	HAL_Delay(120);
 	writeCommand(ILI9341_DISPON);    //Display on
-	delay(120);
+	HAL_Delay(120);
 	endWrite();
 
-	_width  = ILI9341_TFTWIDTH;
-	_height = ILI9341_TFTHEIGHT;
+	_width  = ILI9341_WIDTH;
+	_height = ILI9341_HEIGHT;
 }
-
-
 
 
 /**************************************************************************/
@@ -203,18 +175,12 @@ void ili9341::setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 		// 	spiWrite((xa) >> 8); 
 		// 	spiWrite(xa);
 		// };
-	spiWrite((xa) >> 24);
-	spiWrite((xa) >> 16);
-	spiWrite((xa) >> 8); 
-	spiWrite(xa);
+	spiWrite32(xa);
 	
 	writeCommand(ILI9341_PASET); // Row addr set
 	
 	//SPI_WRITE32(ya);
-	spiWrite((ya) >> 24);
-	spiWrite((ya) >> 16);
-	spiWrite((ya) >> 8); 
-	spiWrite(ya);
+	spiWrite32(ya);
 
 	writeCommand(ILI9341_RAMWR); // write to RAM
 }
@@ -272,31 +238,7 @@ void ili9341::writePixel(uint16_t color)
 	// 	spiWrite((color) >> 8); 
 	// 	spiWrite(color);
 	// };
-	spiWrite((color) >> 8); 
-	spiWrite(color);
-}
-
-
-/**************************************************************************/
-/*!
-   @brief  Begin SPI transaction, for software or hardware SPI
-*/
-/**************************************************************************/
-void ili9341::startWrite(void)
-{
-	//SPI_BEGIN_TRANSACTION(); //if(_sclk < 0){SPI.beginTransaction(SPISettings(_freq, 1, 0x00));};
-
-	//SPI_CS_LOW(); //*csport &= ~cspinmask;
-	ili9341_ll_spi_select();
-}
-
-
-void ili9341::endWrite(void)
-{
-	//SPI_CS_HIGH();  //*csport |= cspinmask;
-	ili9341_ll_spi_deselect();
-
-    //SPI_END_TRANSACTION();	//if(_sclk < 0){SPI.endTransaction();};
+	spiWrite16(color); 
 }
 
 
@@ -310,18 +252,52 @@ void ili9341::endWrite(void)
 void ili9341::writeCommand(uint8_t cmd)
 {
     // *dcport &= ~dcpinmask; // SPI_DC_LOW();
-    ili9341_ll_set_command_mode();
+    setCommandMode();
 
     spiWrite(cmd);
 
     // *dcport |= dcpinmask; //SPI_DC_HIGH();
-    ili9341_ll_set_data_mode();
+   setDataMode();
+}
+
+
+
+
+
+/**************************************************************************/
+/*!
+   @brief  Begin SPI transaction
+*/
+/**************************************************************************/
+void ili9341::startWrite(void)
+{
+	//SPI_BEGIN_TRANSACTION(); //if(_sclk < 0){SPI.beginTransaction(SPISettings(_freq, 1, 0x00));};
+
+	//SPI_CS_LOW(); //*csport &= ~cspinmask;
+	ili9341_ll_spi_select();
 }
 
 
 /**************************************************************************/
 /*!
-   @brief  Write 8-bit data via hardware or software SPI. Does not set up SPI transaction.
+   @brief  End SPI transaction
+*/
+/**************************************************************************/
+void ili9341::endWrite(void)
+{
+	//SPI_CS_HIGH();  //*csport |= cspinmask;
+	ili9341_ll_spi_deselect();
+
+    //SPI_END_TRANSACTION();	//if(_sclk < 0){SPI.endTransaction();};
+}
+
+
+
+
+
+/**************************************************************************/
+/*!
+   @brief  Write 8-bit data via hardware. Does not set up SPI transaction.
    @param  b Byte of data to write over SPI
 */
 /**************************************************************************/
@@ -340,5 +316,50 @@ void ili9341::spiWrite(uint8_t b)
     //     SSPI_SCK_LOW();
     //     SSPI_SCK_HIGH();
     // }
-    ili9341_ll_spiWrite(uint8_t b);
+    ili9341_ll_spiWrite(b);
+}
+
+/**************************************************************************/
+/*!
+   @brief  Write 16-bit data via hardware SPI. Does not set up SPI transaction.
+   @param  b Byte of data to write over SPI
+*/
+/**************************************************************************/
+void ili9341::spiWrite16(uint16_t b)
+{
+    ili9341_ll_spiWrite16(b);
+}
+
+
+/**************************************************************************/
+/*!
+   @brief  Write 16-bit data via hardware SPI. Does not set up SPI transaction.
+   @param  b Byte of data to write over SPI
+*/
+/**************************************************************************/
+void ili9341::spiWrite32(uint32_t b)
+{
+    ili9341_ll_spiWrite32(b);
+}
+
+
+/**************************************************************************/
+/*!
+   @brief  set ili9341 data mode
+*/
+/**************************************************************************/
+void ili9341::setCommandMode(void)
+{
+	ili9341_ll_set_command_mode();
+}
+
+
+/**************************************************************************/
+/*!
+   @brief  set ili9341 data mode
+*/
+/**************************************************************************/
+void ili9341::setDataMode(void)
+{
+	ili9341_ll_set_data_mode();
 }

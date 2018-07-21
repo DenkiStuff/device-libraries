@@ -99,7 +99,6 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 	oled.init();
-	oled.drawPixel(0,0,0xF800);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -109,9 +108,9 @@ int main(void)
 
   /* USER CODE END WHILE */
     uint8_t i;
-    for (int i = 0; i < 25; ++i)
+    for (int i = 0; i < 100; ++i)
     {
-      oled.drawPixel(i,i,0xF800);
+      oled.drawPixel(i, i, ILI9341_BLACK);
     }
   /* USER CODE BEGIN 3 */
 
