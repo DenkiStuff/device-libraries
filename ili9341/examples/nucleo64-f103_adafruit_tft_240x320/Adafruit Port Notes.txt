@@ -1,0 +1,10 @@
+Just a guess at the point
+
+
+drawXXX - hardware functions with a software fall-back in GFX. If hardware functions exist, hardware is used, otherwise software routines are used.
+NOTE: drawPixel is the minimum, mandatory sub-function required
+	-can optionally be redefined in hardware library
+
+
+writeXXX - software functions in GFX
+	-can optionally be redefined in hardware library

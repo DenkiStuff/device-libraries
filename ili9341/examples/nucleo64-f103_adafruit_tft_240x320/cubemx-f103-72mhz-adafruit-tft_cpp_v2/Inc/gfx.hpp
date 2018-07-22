@@ -11,6 +11,15 @@ class gfx {
 
 		// This MUST be defined by the derivitive class:
 		virtual void drawPixel(int16_t x, int16_t y, uint16_t color) = 0;
+		// tsest virtual void startWrite(void) = 0;
+		// virtual void endWrite(void) = 0;
+		virtual void startWrite(void);
+		virtual void endWrite(void);
+
+		// 
+		void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+		void writePixel(int16_t x, int16_t y, uint16_t color);
+		void writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 
 	protected:
 		const int16_t WIDTH, HEIGHT;  // This is the 'raw' display w/h - never changes
