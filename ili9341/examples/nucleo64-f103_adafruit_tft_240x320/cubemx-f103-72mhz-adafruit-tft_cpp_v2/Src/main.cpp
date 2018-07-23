@@ -99,7 +99,27 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 	oled.init();
+
+  uint8_t i;
+  for (int i = 0; i < 100; ++i){
+    oled.drawPixel(i, i, ILI9341_BLACK);
+  }
+
+
+  for (int i = 150; i < 200; ++i){
+    oled.drawPixel(i, i, ILI9341_BLACK);
+  }
+
+  oled.drawLine(25, 36, 85, 120, ILI9341_BLACK);
+
+  oled.drawLine(50, 47, 50, 35, ILI9341_BLACK);
+
+  oled.drawLine(23, 50, 140, 50, ILI9341_BLACK);
+
   /* USER CODE END 2 */
+
+
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -107,17 +127,7 @@ int main(void)
   {
 
   /* USER CODE END WHILE */
-    uint8_t i;
-    for (int i = 0; i < 100; ++i){
-      oled.drawPixel(i, i, ILI9341_BLACK);
-    }
 
-
-    for (int i = 150; i < 200; ++i){
-      oled.drawPixel(i, i, ILI9341_BLACK);
-    }
-
-    oled.drawLine(25, 36, 85, 120, ILI9341_BLACK);
   /* USER CODE BEGIN 3 */
 
   }
